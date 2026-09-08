@@ -53,10 +53,39 @@ Additionally, this vulnerability was **introduced in pyo3 0.24.0**. Our crates u
 All 27 Dependabot alerts have been dismissed as **not_used**. None of the three
 vulnerable PyO3 functions are called in any of the 14 crates in this repository.
 
-## Recommendation
+## Warning for adaptors and forks
 
-Upgrading to pyo3 0.29.x is recommended for future development to ensure
-compatibility with the latest PyO3 API and to prevent future vulnerabilities.
-However, this requires a significant API migration (0.20 → 0.29 introduces
-the `Bound<'py, T>` smart pointer pattern). This should be done as a dedicated
-migration task, not as a security hotfix.
+> **This is public code.** Even though the OmniMind origin code does not call the
+> vulnerable functions, **you must verify your own adaptations**. If you fork,
+> modify, or extend any crate and start using `PyString::from_object`,
+> `PyCFunction::new_closure`, or iterate `PyList`/`PyTuple` with `.nth()` /
+> `.nth_back()`, **you will be exposed to the vulnerabilities described above.**
+
+### What to check in your adaptation
+
+1. **`PyString::from_object`** — if you create Python strings from Python objects
+   with an encoding argument, you are exposed to a buffer overflow (OOB read).
+   Mitigation: upgrade to pyo3 `>=0.24.1` or use `PyString::new()` instead.
+
+2. **`PyCFunction::new_closure`** — if you create Python closures from Rust,
+   the closure may be called concurrently from multiple Python threads without
+   `Sync`. Mitigation: upgrade to pyo3 `>=0.29.0` or ensure your closure is
+   `Sync` manually.
+
+3. **`BoundListIterator::nth` / `BoundTupleIterator::nth`** — if you iterate
+   Python lists or tuples using `.nth(n)` with a large `n`, you may trigger an
+   out-of-bounds read. Mitigation: upgrade to pyo3 `>=0.29.0` or avoid `.nth()`
+   on PyO3 iterators (use indexing or `.next()` in a loop instead).
+
+### Upgrade path
+
+Upgrading to pyo3 0.29.x is recommended for all adaptations. This requires a
+significant API migration (0.20 → 0.29 introduces the `Bound<'py, T>` smart
+pointer pattern). Key migration steps:
+
+- `&PyList` → `&Bound<'_, PyList>` (or `Bound<'_, PyList>`)
+- `PyList::new(py, data)` → `PyList::new(py, data)` (API mostly compatible)
+- `obj.cast()` → `obj.bind()` in some contexts
+- `PyModule::new` → `Bound<'_, PyModule>` variants
+
+See the [PyO3 migration guide](https://pyo3.rs/v0.29/migration) for details.
