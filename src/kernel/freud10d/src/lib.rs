@@ -153,12 +153,12 @@ impl Freud10DApparatus {
     }
 
     /// Estado atual como dict {phi, psi, ..., lambda_}
-    fn state_dict(&self, py: Python) -> PyResult<PyObject> {
+    fn state_dict(&self, py: Python) -> PyResult<Py<PyAny>> {
         let d = PyDict::new(py);
         for (i, name) in DIM_NAMES.iter().enumerate() {
             d.set_item(name, self.state[i] as f64)?;
         }
-        Ok(d.into())
+        Ok(d.unbind().into())
     }
 
     /// Vetor 10D atual (compat com Psychic10DState.to_vector).
@@ -167,29 +167,29 @@ impl Freud10DApparatus {
     }
 
     /// Fluxo topográfico: Consciente ↔ Pré-consciente ↔ Inconsciente.
-    fn topographic_flow(&self, py: Python) -> PyResult<PyObject> {
+    fn topographic_flow(&self, py: Python) -> PyResult<Py<PyAny>> {
         let d = PyDict::new(py);
         d.set_item("conscious", self.state[DIM_OMEGA] as f64)?;
         d.set_item("preconscious", self.state[DIM_THETA] as f64)?;
         d.set_item("unconscious", self.state[DIM_UPSILON] as f64)?;
         d.set_item("repression", self.w[[DIM_THETA, DIM_UPSILON]] as f64)?;
         d.set_item("return_repressed", self.w[[DIM_UPSILON, DIM_PSI]] as f64)?;
-        Ok(d.into())
+        Ok(d.unbind().into())
     }
 
     /// Conflito estrutural: Id ↔ Ego ↔ Superego.
-    fn structural_conflict(&self, py: Python) -> PyResult<PyObject> {
+    fn structural_conflict(&self, py: Python) -> PyResult<Py<PyAny>> {
         let d = PyDict::new(py);
         let conflict = (self.state[DIM_XI] - self.state[DIM_ETA]).abs();
         d.set_item("id_drive", self.state[DIM_XI] as f64)?;
         d.set_item("ego_mediation", self.state[DIM_ZETA] as f64)?;
         d.set_item("superego_censorship", self.state[DIM_ETA] as f64)?;
         d.set_item("conflict_intensity", conflict as f64)?;
-        Ok(d.into())
+        Ok(d.unbind().into())
     }
 
     /// Métricas completas equivalentes a get_10d_metrics() do Python.
-    fn get_10d_metrics(&self, py: Python) -> PyResult<PyObject> {
+    fn get_10d_metrics(&self, py: Python) -> PyResult<Py<PyAny>> {
         let d = PyDict::new(py);
 
         // state_10d como list
@@ -211,7 +211,7 @@ impl Freud10DApparatus {
         let pleasure_last = self.pleasure_history.last().copied().unwrap_or(0.0);
         d.set_item("pleasure", pleasure_last as f64)?;
 
-        Ok(d.into())
+        Ok(d.unbind().into())
     }
 
     /// Tamanho do histórico de tensão (útil para debug/monitor).
@@ -297,7 +297,7 @@ impl Freud10DApparatus {
     /// Tripleto neutrosófico (T, I, F) para cada dimensão do state 10D.
     /// T = |state[i]| (verdade/ativação), I = 1 - |state[i]| - F (indeterminação),
     /// F = tension_penalty (falsidade/conflito).
-    fn neutrosophic_state(&self, py: Python) -> PyResult<PyObject> {
+    fn neutrosophic_state(&self, py: Python) -> PyResult<Py<PyAny>> {
         let d = PyDict::new(py);
         let tension_penalty = {
             let t: f32 = self.state.iter().map(|x| x.abs()).sum::<f32>() / N_DIMS as f32;
@@ -313,7 +313,7 @@ impl Freud10DApparatus {
             triple.set_item("F", f_val as f64)?;
             d.set_item(name, triple)?;
         }
-        Ok(d.into())
+        Ok(d.unbind().into())
     }
 
     /// Recomenda operação INRC baseado no state atual.
@@ -339,7 +339,7 @@ impl Freud10DApparatus {
 /// Função utilitária standalone para extrair valores freudianos compatíveis
 /// com `integrate_with_topology` do Python (mapeia 10D → 7 chaves).
 #[pyfunction]
-fn freudian_values_from_state(state_vec: Vec<f32>, py: Python) -> PyResult<PyObject> {
+fn freudian_values_from_state(state_vec: Vec<f32>, py: Python) -> PyResult<Py<PyAny>> {
     if state_vec.len() < N_DIMS {
         return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
             format!("state_vec deve ter pelo menos {} elementos", N_DIMS),
@@ -353,12 +353,12 @@ fn freudian_values_from_state(state_vec: Vec<f32>, py: Python) -> PyResult<PyObj
     d.set_item("omega", state_vec[DIM_OMEGA] as f64)?;
     d.set_item("lambda_", state_vec[DIM_LAMBDA] as f64)?;
     d.set_item("zeta", state_vec[DIM_ZETA] as f64)?;
-    Ok(d.into())
+    Ok(d.unbind().into())
 }
 
 /// Módulo Python `omnimind_freud10d`.
 #[pymodule]
-fn omnimind_freud10d(_py: Python, m: &PyModule) -> PyResult<()> {
+fn omnimind_freud10d(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Freud10DApparatus>()?;
     m.add_function(wrap_pyfunction!(freudian_values_from_state, m)?)?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;

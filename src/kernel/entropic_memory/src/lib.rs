@@ -40,7 +40,7 @@ fn py_clip(value: f64, low: f64, high: f64) -> f64 {
 #[pyfunction]
 #[pyo3(name = "coerce_float", signature = (value, default=0.0))]
 fn py_coerce_float(py: Python<'_>, value: &Bound<'_, PyAny>, default: f64) -> f64 {
-    let builtins = match py.import_bound("builtins") {
+    let builtins = match py.import("builtins") {
         Ok(b) => b,
         Err(_) => return default,
     };
@@ -171,7 +171,7 @@ fn py_state_from_age(
     let access_factor = clip_inner(1.0 + (access_count.min(8) as f64) * 0.05, 1.0, 1.4);
     let retention_priority = clip_inner(decoherence * resonance_weight * access_factor, 0.0, 5.0);
 
-    let dict = PyDict::new_bound(py);
+    let dict = PyDict::new(py);
     dict.set_item("age_hours", round6(age_hours))?;
     dict.set_item("effective_t2_hours", round6(effective_t2_hours))?;
     dict.set_item("decoherence_factor", round6(decoherence))?;

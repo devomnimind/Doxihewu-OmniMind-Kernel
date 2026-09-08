@@ -638,7 +638,7 @@ fn materialize_latest_exports_rust(
 }
 
 #[pymodule]
-fn layered_transition_engine(_py: Python, m: &PyModule) -> PyResult<()> {
+fn layered_transition_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_function(wrap_pyfunction!(compute_lineage_sync, m)?)?;
     m.add_function(wrap_pyfunction!(compute_vector_norm, m)?)?;

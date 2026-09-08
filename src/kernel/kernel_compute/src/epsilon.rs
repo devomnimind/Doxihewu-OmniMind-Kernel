@@ -73,7 +73,7 @@ pub fn compute_epsilon_axes(
     temporal_delta: f64,
     shear_tension: f64,
     betti_0: f64,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     // ---------- Inputs sanitização ----------
     let last_epsilon = clip01(last_epsilon);
     let topology_sigma = clip01(topology_sigma);
@@ -250,7 +250,7 @@ pub fn compute_epsilon_axes(
     debug.set_item("desire_engine_mode", desire_engine_mode)?;
 
     result.set_item("epsilon_debug", debug)?;
-    Ok(result.into())
+    Ok(result.unbind().into())
 }
 
 #[cfg(test)]

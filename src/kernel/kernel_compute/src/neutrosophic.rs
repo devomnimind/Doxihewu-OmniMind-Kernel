@@ -40,7 +40,7 @@ pub fn neutrosophic_construct_quadruple(
     value: f64,
     resonance: f64,
     noise: f64,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     let t_min = clip01(value - noise);
     let t_max = clip01(value + noise);
 
@@ -59,7 +59,7 @@ pub fn neutrosophic_construct_quadruple(
     result.set_item("c_max", i_max)?;
     result.set_item("d_min", f_min)?;
     result.set_item("d_max", f_max)?;
-    Ok(result.into())
+    Ok(result.unbind().into())
 }
 
 /// Aplica transformação Neo-Ilusória (T[]) a uma quadruple.
@@ -77,7 +77,7 @@ pub fn neutrosophic_apply_neo_transformation(
     d_mid: f64,
     mediator_phi: f64,
     epsilon_real: f64,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     let potential_i = c_mid;
     let potential_f = d_mid;
     let manifest_shift = potential_i * (mediator_phi / 100.0);
@@ -93,7 +93,7 @@ pub fn neutrosophic_apply_neo_transformation(
     result.set_item("b", new_b)?;
     result.set_item("c", new_c.max(0.0))?;
     result.set_item("d", new_d.max(0.0))?;
-    Ok(result.into())
+    Ok(result.unbind().into())
 }
 
 /// Calcula TOPSIS closeness para uma lista de quadruples.
@@ -108,17 +108,17 @@ pub fn neutrosophic_apply_neo_transformation(
 #[pyo3(signature = (quad_list, ideal_pos=None, ideal_neg=None))]
 pub fn neutrosophic_quadruple_topsis(
     py: Python,
-    quad_list: &PyList,
+    quad_list: &Bound<'_, PyList>,
     ideal_pos: Option<(f64, f64, f64, f64)>,
     ideal_neg: Option<(f64, f64, f64, f64)>,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     let ip = ideal_pos.unwrap_or((1.0, 1.0, 0.0, 0.0));
     let ineg = ideal_neg.unwrap_or((0.0, 0.0, 1.0, 1.0));
 
     let mut closeness: Vec<f64> = Vec::with_capacity(quad_list.len());
 
     for item in quad_list.iter() {
-        let dict = item.downcast::<PyDict>()?;
+        let dict = item.cast::<PyDict>()?.clone();
         let a: f64 = dict
             .get_item("a")?
             .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyKeyError, _>("a"))?
@@ -147,7 +147,7 @@ pub fn neutrosophic_quadruple_topsis(
         closeness.push(if denom > 0.0 { dn / denom } else { 0.5 });
     }
 
-    Ok(PyList::new(py, &closeness).into())
+    Ok(PyList::new(py, &closeness)?.unbind().into())
 }
 
 /// Calcula o Tensor de Disponibilidade P_μν (Resistência/Esforço).

@@ -154,7 +154,7 @@ fn health() -> bool {
 }
 
 #[pymodule]
-fn omnimind_expectation_rs(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn omnimind_expectation_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(predict, m)?)?;
     m.add_function(wrap_pyfunction!(predict_with_weights, m)?)?;
     m.add_function(wrap_pyfunction!(health, m)?)?;

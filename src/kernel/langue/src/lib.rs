@@ -19,7 +19,7 @@ use tifinagh::to_tifinagh;
 /// 
 /// Users see lexeme handles (e.g., "MA-MU-atã-me'ẽ"), kernel manages real paths.
 /// Integrates Banto (WHAT) + Tupi-Guarani (HOW) linguistic protocol.
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct LangueKernelInterface {
     db: Connection,
     matrix: TransatlanticProtocol,
@@ -152,7 +152,7 @@ impl LangueKernelInterface {
     /// 
     /// Returns:
     ///     File contents as bytes
-    pub fn read_by_handle<'py>(&mut self, py: Python<'py>, handle: &str, use_mmap: Option<bool>) -> PyResult<&'py pyo3::types::PyBytes> {
+    pub fn read_by_handle<'py>(&mut self, py: Python<'py>, handle: &str, use_mmap: Option<bool>) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
         // Query path from database
         let (path, size_bytes): (String, i64) = self.db
             .query_row(
@@ -369,7 +369,7 @@ impl LangueKernelInterface {
 }
 
 #[pymodule]
-fn omnimind_langue(_py: Python, m: &PyModule) -> PyResult<()> {
+fn omnimind_langue(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<LangueKernelInterface>()?;
     Ok(())
 }

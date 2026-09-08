@@ -63,7 +63,7 @@ impl NativeSharedWorkspace {
 }
 
 #[pymodule]
-fn omnimind_nsh(_py: Python, m: &PyModule) -> PyResult<()> {
+fn omnimind_nsh(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<NativeSharedWorkspace>()?;
     Ok(())
 }

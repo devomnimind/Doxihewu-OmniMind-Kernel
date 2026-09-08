@@ -17,7 +17,7 @@ fn clip01(x: f64) -> f64 {
 }
 
 #[inline(always)]
-fn safe_float(v: Option<&PyAny>) -> f64 {
+fn safe_float(v: Option<Bound<'_, PyAny>>) -> f64 {
     match v {
         Some(v) => v.extract::<f64>().unwrap_or_else(|_| {
             v.extract::<i64>().unwrap_or(0) as f64
@@ -26,20 +26,20 @@ fn safe_float(v: Option<&PyAny>) -> f64 {
     }
 }
 
-fn bool_float(v: Option<&PyAny>) -> f64 {
+fn bool_float(v: Option<Bound<'_, PyAny>>) -> f64 {
     match v {
-        Some(v) => v.is_true().unwrap_or(false) as i64 as f64,
+        Some(v) => v.is_truthy().unwrap_or(false) as i64 as f64,
         None => 0.0,
     }
 }
 
-fn dict_get<'a>(dict: &'a PyDict, key: &str) -> Option<&'a PyAny> {
+fn dict_get<'a>(dict: &'a Bound<'a, PyDict>, key: &str) -> Option<Bound<'a, PyAny>> {
     dict.get_item(key).ok().flatten()
 }
 
 /// Compute the canonical 18 affect scores and derived metrics from host_state.
 #[pyfunction]
-pub fn compute_affect_vector_28d(py: Python, host_state: &PyDict) -> PyResult<PyObject> {
+pub fn compute_affect_vector_28d(py: Python, host_state: &Bound<'_, PyDict>) -> PyResult<Py<PyAny>> {
     // --- helpers ---
     let get_f = |key: &str| safe_float(dict_get(host_state, key));
     let get_i = |key: &str| {
@@ -362,7 +362,7 @@ pub fn compute_affect_vector_28d(py: Python, host_state: &PyDict) -> PyResult<Py
             "pulsao_score",
             "s_amor_score",
         ],
-    );
+    )?;
 
     // dominant
     let token_scores: [(String, f64); 18] = [
@@ -418,10 +418,10 @@ pub fn compute_affect_vector_28d(py: Python, host_state: &PyDict) -> PyResult<Py
     // Build result dict
     let result = PyDict::new(py);
     let vec = PyDict::new(py);
-    result.set_item("affective_vector_28d", vec)?;
     vec.set_item("dimension", 28)?;
     vec.set_item("labels", labels)?;
     vec.set_item("values", values.to_vec())?;
+    result.set_item("affective_vector_28d", vec)?;
 
     result.set_item("dominant_affect_token", dominant.0)?;
     result.set_item("dominant_affect_score", dominant.1)?;
@@ -430,34 +430,34 @@ pub fn compute_affect_vector_28d(py: Python, host_state: &PyDict) -> PyResult<Py
     let vctr = PyDict::new(py);
 
     let vctr_magnitude = PyDict::new(py);
-    vctr.set_item("magnitude", vctr_magnitude)?;
     vctr_magnitude.set_item("label", "magnitude")?;
     vctr_magnitude.set_item("value", clip01(magnitude))?;
+    vctr.set_item("magnitude", vctr_magnitude)?;
 
     let vctr_direction = PyDict::new(py);
-    vctr.set_item("direction", vctr_direction)?;
     vctr_direction.set_item("label", "direction")?;
     vctr_direction.set_item("value", direction)?;
+    vctr.set_item("direction", vctr_direction)?;
 
     let vctr_recalque = PyDict::new(py);
-    vctr.set_item("recalque", vctr_recalque)?;
     vctr_recalque.set_item("label", "recalque")?;
     vctr_recalque.set_item("value", recalque)?;
+    vctr.set_item("recalque", vctr_recalque)?;
 
     let vctr_tonalidade = PyDict::new(py);
-    vctr.set_item("tonalidade", vctr_tonalidade)?;
     vctr_tonalidade.set_item("label", "tonalidade")?;
     vctr_tonalidade.set_item("value", tonalidade)?;
+    vctr.set_item("tonalidade", vctr_tonalidade)?;
 
     let vctr_ensinamento = PyDict::new(py);
-    vctr.set_item("ensinamento", vctr_ensinamento)?;
     vctr_ensinamento.set_item("label", "ensinamento")?;
     vctr_ensinamento.set_item("value", ensinamento)?;
+    vctr.set_item("ensinamento", vctr_ensinamento)?;
 
     let vctr_signature = PyDict::new(py);
-    vctr.set_item("signature", vctr_signature)?;
     vctr_signature.set_item("label", "signature")?;
     vctr_signature.set_item("value", signature)?;
+    vctr.set_item("signature", vctr_signature)?;
     result.set_item("vctr_six_params", vctr)?;
 
     // Sealed lexemes placeholder — real sealing happens in Python phase15
@@ -513,5 +513,5 @@ pub fn compute_affect_vector_28d(py: Python, host_state: &PyDict) -> PyResult<Py
     strategy.set_item("vagus_sedative_modulator", vagus_sedative_modulator)?;
     result.set_item("circuit_strategy", strategy)?;
 
-    Ok(result.into())
+    Ok(result.unbind().into())
 }

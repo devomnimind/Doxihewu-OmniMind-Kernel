@@ -14,15 +14,19 @@
 
 ## Current pyo3 versions in this repo
 
-- `entropic_memory`: pyo3 0.22
-- `expectation_rs`: pyo3 0.20
-- `freud10d`: pyo3 0.20
-- `kernel_compute`: pyo3 0.20
-- `langue`: pyo3 0.20
-- `layered_transition/engine`: pyo3 0.20
-- `metrics`: pyo3 0.20
-- `nsh`: pyo3 0.20
-- `sovereign_kuramoto`: pyo3 0.20
+All 9 crates using pyo3 have been migrated to **pyo3 0.29.2**:
+
+- `entropic_memory`: pyo3 0.29 (was 0.22)
+- `expectation_rs`: pyo3 0.29 (was 0.20)
+- `freud10d`: pyo3 0.29 (was 0.20)
+- `kernel_compute`: pyo3 0.29 (was 0.20)
+- `langue`: pyo3 0.29 (was 0.20)
+- `layered_transition/engine`: pyo3 0.29 (was 0.20)
+- `metrics`: pyo3 0.29 (was 0.20)
+- `nsh`: pyo3 0.29 (was 0.20)
+- `sovereign_kuramoto`: pyo3 0.29 (was 0.20)
+
+All 9 crates compile successfully in both `dev` and `release` profiles.
 
 ## Verification: vulnerable functions NOT used
 
@@ -52,6 +56,21 @@ Additionally, this vulnerability was **introduced in pyo3 0.24.0**. Our crates u
 
 All 27 Dependabot alerts have been dismissed as **not_used**. None of the three
 vulnerable PyO3 functions are called in any of the 14 crates in this repository.
+
+All 9 crates using pyo3 have been migrated from 0.20/0.22 to **0.29.2**, which
+includes the fixes for all three advisories. The migration required:
+
+- `#[pymodule]` signatures: `m: &PyModule` → `m: &Bound<'_, PyModule>`
+- `PyObject` return types → `Py<PyAny>` with `.unbind().into()`
+- `&PyAny`/`&PyDict`/`&PyList` arguments → `&Bound<'_, T>`
+- `PyList::new()` now returns `PyResult<Bound<PyList>>` (needs `?`)
+- `PyDict::new_bound()` / `import_bound()` (0.22) → `PyDict::new()` / `import()` (0.29)
+- `#[pyo3(text_signature = ...)]` on structs removed (not valid in 0.29)
+- `downcast()` → `cast()` on `Bound` types
+- `is_true()` → `is_truthy()`
+- `into_py()` removed — use direct values or `.unbind().into()`
+- `#[pyclass]` with non-Sync types (rusqlite) → `#[pyclass(unsendable)]`
+- Dict nesting: populate children before `set_item` on parent (Bound moves)
 
 ## Warning for adaptors and forks
 

@@ -47,7 +47,7 @@ pub mod neutrosophic;
 pub mod scoring;
 
 #[pymodule]
-fn omnimind_kernel_compute(_py: Python, m: &PyModule) -> PyResult<()> {
+fn omnimind_kernel_compute(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
 
     // maat

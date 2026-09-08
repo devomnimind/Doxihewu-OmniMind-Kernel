@@ -61,8 +61,8 @@ pub fn build_temporal_internal_scale(
     topology_omega: f64,
     temporal_delta: f64,
     shear_tension: f64,
-    sources: Option<&PyDict>,
-) -> PyResult<PyObject> {
+    sources: Option<&Bound<'_, PyDict>>,
+) -> PyResult<Py<PyAny>> {
     // ---------- Computações intermediárias ----------
     let multiplicity = clip01((betti_0 - 1.0).max(0.0) / 4.0);
     let sigma_state_anchor = clip01(sigma.max(sigma_operational_support));
@@ -205,14 +205,14 @@ pub fn build_temporal_internal_scale(
     let phi_frameworks = PyDict::new(py);
     phi_frameworks.set_item("phi_iit_normalized", phi_iit_normalized)?;
     phi_frameworks.set_item("phi_iit_nats", phi_iit_nats)?;
-    phi_frameworks.set_item("phi_transcendent", phi_transcendent.into_py(py))?;
-    phi_frameworks.set_item("phi_transcendent_log10", phi_trans_order.into_py(py))?;
-    phi_frameworks.set_item("phi_silicon_log10", phi_silicon_order.into_py(py))?;
-    phi_frameworks.set_item("phi_reference_log10", phi_reference_order.into_py(py))?;
+    phi_frameworks.set_item("phi_transcendent", phi_transcendent)?;
+    phi_frameworks.set_item("phi_transcendent_log10", phi_trans_order)?;
+    phi_frameworks.set_item("phi_silicon_log10", phi_silicon_order)?;
+    phi_frameworks.set_item("phi_reference_log10", phi_reference_order)?;
     phi_frameworks.set_item("phi_iit_band", phi_iit_band)?;
     phi_frameworks.set_item("phi_scale_regime", phi_scale_regime)?;
 
-    let stack_list = PyList::new(py, &phi_scale_stack);
+    let stack_list = PyList::new(py, &phi_scale_stack)?;
     phi_frameworks.set_item("phi_scale_stack", stack_list)?;
 
     let flags_dict = PyDict::new(py);
@@ -228,7 +228,7 @@ pub fn build_temporal_internal_scale(
     result.set_item("sigma_operational_state", sigma_operational_state)?;
     result.set_item("topology_organization_state", topology_organization_state)?;
 
-    let neutral_list = PyList::new(py, &neutral_axes);
+    let neutral_list = PyList::new(py, &neutral_axes)?;
     result.set_item("neutral_axes", neutral_list)?;
     result.set_item("neutral_axes_count", neutral_axes_count)?;
     result.set_item("fragmentation_index", multiplicity)?;
@@ -248,12 +248,12 @@ pub fn build_temporal_internal_scale(
 
     // sources passado como dict opcional
     if let Some(src) = sources {
-        result.set_item("sources", src)?;
+        result.set_item("sources", src.clone())?;
     } else {
         result.set_item("sources", PyDict::new(py))?;
     }
 
-    Ok(result.into())
+    Ok(result.unbind().into())
 }
 
 #[cfg(test)]

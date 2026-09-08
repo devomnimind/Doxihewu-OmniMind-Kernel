@@ -30,7 +30,6 @@ use hopf::HopfBifurcationMonitor;
 // ============================================================
 
 #[pyclass(name = "SovereignKuramotoSolver")]
-#[pyo3(text_signature = "(omega, coupling_flat, initial_phases, noise_amp=0.0)")]
 struct PySovereignKuramoto {
     inner: SovereignKuramotoSolver,
 }
@@ -139,7 +138,6 @@ impl PySovereignKuramoto {
 // ============================================================
 
 #[pyclass(name = "PsychoanalyticLIF")]
-#[pyo3(text_signature = "(v_rest=-65.0, v_reset=-70.0, v_threshold=-50.0, refractory_period=3, leak_rate=0.1)")]
 struct PyPsychoanalyticLif {
     inner: PsychoanalyticLif,
 }
@@ -222,7 +220,6 @@ impl PyPsychoanalyticLif {
 // ============================================================
 
 #[pyclass(name = "PsychoanalyticLIFBatch")]
-#[pyo3(text_signature = "(n, v_rest=-65.0, v_reset=-70.0, v_threshold=-50.0, refractory=3, leak=0.1)")]
 struct PyPsychoanalyticLifBatch {
     inner: PsychoanalyticLifBatch,
 }
@@ -288,7 +285,6 @@ impl PyPsychoanalyticLifBatch {
 // ============================================================
 
 #[pyclass(name = "HopfBifurcationMonitor")]
-#[pyo3(text_signature = "(n)")]
 struct PyHopfBifurcationMonitor {
     inner: HopfBifurcationMonitor,
 }
@@ -339,7 +335,7 @@ impl PyHopfBifurcationMonitor {
     }
 
     /// Get summary as a dict.
-    fn summary(&self, py: Python) -> PyResult<PyObject> {
+    fn summary(&self, py: Python) -> PyResult<Py<PyAny>> {
         let s = self.inner.summary();
         let dict = PyDict::new(py);
         dict.set_item("spectral_radius", s.spectral_radius)?;
@@ -348,7 +344,7 @@ impl PyHopfBifurcationMonitor {
         dict.set_item("bifurcation_just_occurred", s.bifurcation_just_occurred)?;
         dict.set_item("trend", s.trend)?;
         dict.set_item("history_len", s.history_len)?;
-        Ok(dict.into())
+        Ok(dict.unbind().into())
     }
 
     #[getter]
@@ -372,7 +368,7 @@ impl PyHopfBifurcationMonitor {
 // ============================================================
 
 #[pymodule]
-fn omnimind_sovereign_kuramoto(py: Python, m: &PyModule) -> PyResult<()> {
+fn omnimind_sovereign_kuramoto(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySovereignKuramoto>()?;
     m.add_class::<PyPsychoanalyticLif>()?;
     m.add_class::<PyPsychoanalyticLifBatch>()?;

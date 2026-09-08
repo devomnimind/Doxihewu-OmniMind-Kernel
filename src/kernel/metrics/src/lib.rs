@@ -69,7 +69,7 @@ pub fn calculate_sarannya_entropy(t: f32, i: f32, f: f32) -> f32 {
 }
 
 #[pymodule]
-fn omnimind_metrics(_py: Python, m: &PyModule) -> PyResult<()> {
+fn omnimind_metrics(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(normalize_l2, m)?)?;
     m.add_function(wrap_pyfunction!(cosine_similarity, m)?)?;
     m.add_function(wrap_pyfunction!(quadruple_topsis, m)?)?;
