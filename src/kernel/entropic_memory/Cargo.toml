@@ -1,0 +1,20 @@
+[package]
+name = "omnimind-entropic-memory"
+version = "0.1.0"
+edition = "2021"
+authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
+description = "High-performance Rust port of dream_weaver_entropic_memory hot CPU-bound functions with PyO3 bindings"
+license = "CC-BY-NC-ND-4.0"
+
+[lib]
+name = "omnimind_entropic_memory"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

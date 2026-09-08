@@ -1,0 +1,11 @@
+[package]
+name = "ebpf-monitor-common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aya = { git = "https://github.com/aya-rs/aya", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[features]
+user = ["dep:aya", "dep:serde"]

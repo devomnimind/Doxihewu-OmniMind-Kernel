@@ -1,0 +1,12 @@
+[package]
+name = "ebpf-monitor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aya-ebpf = { git = "https://github.com/aya-rs/aya" }
+ebpf-monitor-common = { path = "../common" }
+
+[[bin]]
+name = "ebpf-monitor"
+path = "src/main.rs"

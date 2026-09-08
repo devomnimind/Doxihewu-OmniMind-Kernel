@@ -1,0 +1,17 @@
+[package]
+name = "omnimind-metrics"
+version = "0.1.0"
+edition = "2021"
+authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
+license = "CC-BY-NC-ND-4.0"
+
+[lib]
+name = "omnimind_metrics"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module"] }
+ndarray = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"

@@ -1,0 +1,22 @@
+[package]
+name = "omnimind-expectation-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
+description = "Expectation Module Rust — porte de expectation_module.py (3× Linear+ReLU, sem torch/Qiskit)"
+license = "CC-BY-NC-ND-4.0"
+
+[lib]
+name = "omnimind_expectation_rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module"] }
+ndarray = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
