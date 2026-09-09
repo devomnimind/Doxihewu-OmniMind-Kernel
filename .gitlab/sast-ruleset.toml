@@ -1,0 +1,18 @@
+# .gitlab/sast-ruleset.toml — Configuração SAST para Rust
+# Usa regras Semgrep do registry público para Rust
+# Referência: https://gitlab.com/help/user/application_security/sast/customize_sast
+
+[semgrep]
+  description = "Rust ruleset via Semgrep registry"
+  targetdir = "/sgrules"
+  timeout = 60
+
+  [[semgrep.passthrough]]
+    type  = "url"
+    value = "https://semgrep.dev/c/p/rust"
+    target = "rust.yml"
+
+  [[semgrep.passthrough]]
+    type  = "url"
+    value = "https://semgrep.dev/c/p/security-audit"
+    target = "security-audit.yml"

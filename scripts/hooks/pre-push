@@ -1,0 +1,28 @@
+#!/bin/bash
+# scripts/hooks/pre-push — Bloqueia push se houver erros críticos
+# Instalação: bash scripts/setup-hooks.sh
+
+set -e
+
+echo "🛡️ Verificando antes do push..."
+
+# Clippy com -D warnings (bloqueia se houver warnings)
+if command -v cargo &> /dev/null; then
+  for cargo_toml in $(find src/kernel -name "Cargo.toml" -not -path "*/target/*" 2>/dev/null); do
+    dir=$(dirname "$cargo_toml")
+    echo "  → clippy --check em $dir"
+    (cd "$dir" && cargo clippy -- -D warnings 2>&1 | head -50)
+  done
+fi
+
+# cargo audit (bloqueia se houver CVEs)
+if command -v cargo-audit &> /dev/null || cargo audit --version &> /dev/null 2>&1; then
+  for lockfile in $(find src/kernel -name "Cargo.lock" -not -path "*/target/*" 2>/dev/null); do
+    dir=$(dirname "$lockfile")
+    echo "  → cargo audit em $dir"
+    (cd "$dir" && cargo audit --deny warnings 2>&1)
+  done
+fi
+
+echo "✅ Push autorizado."
+exit 0

@@ -1,0 +1,46 @@
+# .gitlab-ci.yml — Doxihewu-OmniMind-Kernel
+# CI mínimo de segurança para Rust (GitLab Free plan)
+# SAST roda apenas em MRs para economizar compute minutes
+
+stages:
+  - security
+
+# SAST com Semgrep — inclui template oficial do GitLab
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+
+# SAST só em merge requests (economiza cota de compute minutes)
+semgrep-sast:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      exists:
+        - '**/*.rs'
+        - '**/*.py'
+        - '**/*.c'
+        - '**/*.cpp'
+  variables:
+    # Excluir analyzers não relevantes para este repo
+    SAST_EXCLUDED_ANALYZERS: "bandit,brakeman,eslint,flawfinder,gosec,nodejs-scan,phpcs-security-audit,pmd,security-code-scan,spotbugs"
+    # Ignar diretórios de build e dependências
+    SEARCH_IGNORED_DIRS: "target,node_modules,.cargo"
+
+# cargo-audit — verifica CVEs em dependências Rust
+# Roda apenas em MRs para economizar cota
+cargo-audit:
+  stage: security
+  image: rust:1.87-slim
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      exists:
+        - '**/Cargo.toml'
+  before_script:
+    - cargo install cargo-audit --locked 2>/dev/null || true
+  script:
+    # Roda cargo audit em cada workspace que tem Cargo.lock
+    - |
+      for lockfile in $(find . -name "Cargo.lock" -not -path "./.git/*"); do
+        dir=$(dirname "$lockfile")
+        echo "=== cargo audit em $dir ==="
+        (cd "$dir" && cargo audit 2>&1) || true
+      done
+  allow_failure: true

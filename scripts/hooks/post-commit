@@ -1,0 +1,33 @@
+#!/bin/bash
+# scripts/hooks/post-commit — Roda após cada commit
+# Instalação: bash scripts/setup-hooks.sh
+
+set -e
+
+echo "🔍 Rodando análise local pós-commit..."
+
+# Clippy para cada workspace Rust
+if command -v cargo &> /dev/null; then
+  for cargo_toml in $(find src/kernel -name "Cargo.toml" -not -path "*/target/*" 2>/dev/null); do
+    dir=$(dirname "$cargo_toml")
+    echo "  → clippy em $dir"
+    (cd "$dir" && cargo clippy --quiet -- -D warnings 2>&1 | head -30) || true
+  done
+fi
+
+# Semgrep local (se instalado: pip install semgrep)
+if command -v semgrep &> /dev/null; then
+  echo "  → semgrep local"
+  semgrep --config=auto src/ --quiet --error 2>&1 | head -30 || true
+fi
+
+# cargo audit (se instalado: cargo install cargo-audit)
+if command -v cargo-audit &> /dev/null || cargo audit --version &> /dev/null 2>&1; then
+  for lockfile in $(find src/kernel -name "Cargo.lock" -not -path "*/target/*" 2>/dev/null); do
+    dir=$(dirname "$lockfile")
+    echo "  → cargo audit em $dir"
+    (cd "$dir" && cargo audit 2>&1) || true
+  done
+fi
+
+echo "✅ Análise local concluída."
