@@ -3,6 +3,7 @@
 # SAST + cargo-audit rodam em MRs e pushes para main
 
 stages:
+  - test
   - security
 
 # SAST com Semgrep (template oficial GitLab)
