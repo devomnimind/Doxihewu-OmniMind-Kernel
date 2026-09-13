@@ -259,6 +259,8 @@ pub fn build_full_state(
             "via": "ipc_kernel_state + dodecatiad_live.json + constantes",
             "pyo3": false,
         }),
+        // ADMISSIBILITY (2026-09-12): ler do dodecatiad_live.json (escrito pelo Python)
+        "admissibility": get(&dodeca, &["admissibility"]).cloned().unwrap_or(json!({})),
     });
     payload
 }
