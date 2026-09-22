@@ -1,14 +1,26 @@
 # .gitlab-ci.yml — Doxihewu-OmniMind-Kernel
-# CI de segurança para Rust (GitLab Ultimate trial)
-# SAST + cargo-audit rodam em MRs e pushes para main
+# CI de segurança Rust (SAST + cargo-audit) + OpenCode AI (MR Review & Research Monitoring)
 
 stages:
   - test
   - security
+  - research
 
 # SAST com Semgrep (template oficial GitLab)
 include:
   - template: Jobs/SAST.gitlab-ci.yml
+  - component: $CI_SERVER_FQDN/nagyv/gitlab-opencode/opencode@1.0.137
+    inputs:
+      job_prefix: opencode-mr-review
+      config_dir: ${CI_PROJECT_DIR}/opencode-config
+      auth_json: $OPENCODE_AUTH_JSON
+      stage: test
+      message: "Analise o diff deste Merge Request no Doxihewu-OmniMind-Kernel. Avalie conformidade de segurança Rust (unsafe, concurrency, lifetime), estabilidade e alinhamento com a arquitetura neuro-simbólica descrita em docs/."
+      extends: .opencode_mr_rules
+
+.opencode_mr_rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $OPENCODE_AUTH_JSON
 
 # SAST roda em MRs e pushes para main
 semgrep-sast:
@@ -36,3 +48,27 @@ cargo-audit:
         (cd "$dir" && cargo audit 2>&1) || true
       done
   allow_failure: true
+
+# Research-to-Code Monitoring Pipeline (docs/research_to_code_monitoring_pipeline.md)
+# Roda semanalmente (Scheduled) ou sob demanda (Web Manual)
+research-to-code-monitor:
+  stage: research
+  image:
+    name: registry.gitlab.com/nagyv/gitlab-opencode:1.0.137
+    entrypoint: [""]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $OPENCODE_AUTH_JSON
+    - if: $CI_PIPELINE_SOURCE == "web" && $OPENCODE_AUTH_JSON
+      when: manual
+  before_script:
+    - mkdir -p ~/.local/share/opencode
+    - ln -sf $OPENCODE_AUTH_JSON ~/.local/share/opencode/auth.json
+  script:
+    - export OPENCODE_CONFIG_DIR=${CI_PROJECT_DIR}/opencode-config
+    - echo "=== Executando Research-to-Code Monitoring Pipeline ==="
+    - opencode run --pure -m "opencode-go/deepseek-v4-flash" "Execute a verificação semanal de alinhamento entre as alterações do kernel e as hipóteses de pesquisa em docs/research_to_code_monitoring_pipeline.md. Gere um relatório resumindo deltas e evidências." > research_monitoring_delta.md
+    - cat research_monitoring_delta.md
+  artifacts:
+    when: always
+    paths:
+      - research_monitoring_delta.md
