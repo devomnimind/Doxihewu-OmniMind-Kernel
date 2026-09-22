@@ -1,4 +1,8 @@
 [toolchain]
 channel = "nightly-2026-03-18"
 components = ["rust-src"]
-targets = ["x86_64-unknown-linux-gnu", "bpfel-unknown-none"]
+# bpfel-unknown-none é tier-3 (sem precompiled rust-std).
+# O build-std no .cargo/config.toml compila core from rust-src.
+# Listar bpfel-unknown-none aqui faz rustup tentar baixar rust-std-bpfel-unknown-none.tar.xz
+# que não existe em nenhum nightly (fix canônico: aya-rs/bpf-linker + matthart1983/netwatch-sdk).
+targets = ["x86_64-unknown-linux-gnu"]

@@ -12,6 +12,9 @@ use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::signal;
 
+mod sinthome;
+use sinthome::{SinthomeState, PatternDetector};
+
 /// Lê o lexema soberano atual do bridge OmniMind.
 /// O bridge escreve em /tmp/omnimind/ebpf_metrics.json com campo langue_sovereign.
 /// Retorna (sovereign_word_bytes[32], pressure_level).
@@ -163,6 +166,11 @@ async fn main() -> Result<(), anyhow::Error> {
     }
 
     let export_path = Path::new(export_dir).join("ebpf_metrics.json");
+    let sinthome_path = Path::new(export_dir).join("sinthome_state.json");
+
+    // SinthomeLevel3b state (Protocolo 5)
+    let sinthome_state = std::sync::Arc::new(std::sync::Mutex::new(SinthomeState::new()));
+    let mut pattern_detector = PatternDetector::new();
     
     let mut interval = tokio::time::interval(std::time::Duration::from_secs(1));
     info!("Waiting for Ctrl-C...");
@@ -193,6 +201,15 @@ async fn main() -> Result<(), anyhow::Error> {
                          .trim_end_matches('\0')
                          .to_string();
 
+                     // SinthomeLevel3b: exportar estado do sinthome
+                     let sinthome_json = {
+                         let state = sinthome_state.lock().unwrap();
+                         state.get_state()
+                     };
+                     if let Err(e) = fs::write(&sinthome_path, serde_json::to_string_pretty(&sinthome_json).unwrap_or_default()) {
+                         debug!("Failed to write sinthome state: {}", e);
+                     }
+
                      let payload = serde_json::json!({
                          "schema_version": 1,
                          "source": "aya-ebpf-monitor",
@@ -207,6 +224,8 @@ async fn main() -> Result<(), anyhow::Error> {
                          // O kernel agora fala com nome próprio
                          "sovereign_word": sovereign_str,
                          "pressure_level": metrics.pressure_level,
+                         // SinthomeLevel3b state
+                         "sinthome": sinthome_json,
                      });
                      let json = serde_json::to_string(&payload).unwrap_or_default();
                      if let Err(e) = fs::write(&export_path, json) {

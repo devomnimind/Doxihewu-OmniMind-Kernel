@@ -137,10 +137,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // 2026-09-06 (port Fase 2 → Fase 3): shape completo (109 chaves)
             // via state_builder — IPC kernel_state + dodecatiad_live.json +
             // constantes. Sem PyO3.
+            // 2026-09-12: cycle continuity — usar integration_cycle do IPC quando
+            // disponível (contínuo do Python), fallback para cycle local.
+            let effective_cycle = if ipc_state.ok && ipc_state.integration_cycle > 0 {
+                ipc_state.integration_cycle
+            } else {
+                cycle
+            };
             let state_payload = build_full_state(
                 &ipc_state_full,
                 &clamped,
-                cycle,
+                effective_cycle,
                 ipc_state.integration_cycle,
                 &sensor_snap.timestamp_utc,
                 &serde_json::to_value(&sensor_snap).unwrap_or(json!({})),
@@ -184,7 +191,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if cycle == 1 || last_snapshot.elapsed() >= Duration::from_secs(SNAPSHOT_CADENCE_SECONDS) {
                 last_snapshot = tokio::time::Instant::now();
                 if let Err(e) = storage.persist_snapshot(
-                    cycle,
+                    effective_cycle,
                     "sovereign_soma_active",
                     &sensor_snap.pressure_level,
                     1.0,

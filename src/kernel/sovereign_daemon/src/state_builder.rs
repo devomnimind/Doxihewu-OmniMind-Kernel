@@ -3,7 +3,7 @@
 //! state_builder.rs — Port Fase 2 → Fase 3: shape completo do estado soberano.
 //!
 //! Estratégia (2026-09-06, decisão do operador): o Fase 3 (Rust puro) deve ter
-//! o mesmo shape do Fase 2 (109 chaves) SEM PyO3. As fontes são:
+//! o mesmo shape do Fase 2 (109 chaves, hoje 114 no runtime) SEM PyO3. As fontes são:
 //!   1. kernel_state via IPC (26 chaves) — já implementado em ipc.rs
 //!   2. `data/consciousness/dodecatiad_live.json` (52+ chaves: houses, writers,
 //!      topology, phi_frameworks, temporal_internal_scale...) — o daemon Python
@@ -49,7 +49,11 @@ fn get<'a>(v: &'a Value, keys: &[&str]) -> Option<&'a Value> {
     Some(cur)
 }
 
-/// Monta o shape completo (109 chaves) do estado soberano.
+/// Monta o shape completo (114 chaves no runtime atual; originalmente 109 no
+/// port Fase 2→3, com adições pós-F3: admissibility, witness_incremental_preview,
+/// proxy_mediator_runtime, quantum_runtime, transport_headers/law,
+/// upstream_proxy_chain — verificado 2026-09-12 no
+/// current_sovereign_state_rust_shadow.json) do estado soberano.
 /// `kernel_state` é o state completo do IPC; `sensors` são os sensores locais.
 pub fn build_full_state(
     kernel_state: &Value,
@@ -127,6 +131,28 @@ pub fn build_full_state(
     let writer_count = writers.as_object().map(|o| o.len()).unwrap_or(0) as u64;
     let writer_count_active = writer_count;
 
+    // --- phi_iit_normalized / phi_iit_nats / phi_transcendent (paridade Fase 2) ---
+    // phi é multiescala: cada framework tem sua própria escala.
+    // NÃO normalizar/clampar o que a escala não pede.
+    // phi_iit_normalized: já é normalizado (0-1) por definição no Python — passar direto
+    let phi_iit_norm = get(&phi_frameworks, &["phi_iit_normalized"])
+        .and_then(Value::as_f64)
+        .unwrap_or_else(|| {
+            get(&houses, &["phi_iit_normalized"]).and_then(Value::as_f64).unwrap_or(0.0)
+        });
+    // phi_iit_nats: está em NATS (unidades naturais) — NÃO normalizar, é raw
+    let phi_iit_nats_v = get(&phi_frameworks, &["phi_iit_nats"])
+        .and_then(Value::as_f64)
+        .unwrap_or_else(|| {
+            get(&houses, &["phi_iit_nats"]).and_then(Value::as_f64).unwrap_or(0.0)
+        });
+    // phi_transcendent: raw, pode ser ordens de grandeza — NÃO normalizar
+    let phi_transcendent_v = get(&phi_frameworks, &["phi_transcendent"])
+        .and_then(Value::as_f64)
+        .unwrap_or_else(|| {
+            get(&houses, &["phi_transcendent"]).and_then(Value::as_f64).unwrap_or(0.0)
+        });
+
     let payload = json!({
         // Identidade (constantes)
         "source": WRITER_SOURCE,
@@ -156,18 +182,23 @@ pub fn build_full_state(
         "phi": phi,
         "phi_quadruple": phi,
         "phi_raw": dodeca_phi,
-        "phi_iit_normalized": dodeca_phi,
-        "phi_iit_nats": phi,
-        "phi_transcendent": phi,
-        "phi_ecosystem_kernel": dodeca_phi,
-        "phi_head_canonical": dodeca_phi,
+        "phi_iit_normalized": phi_iit_norm,
+        "phi_iit_nats": phi_iit_nats_v,
+        "phi_transcendent": phi_transcendent_v,
+        "phi_ecosystem_kernel": get(&phi_frameworks, &["phi_ecosystem_kernel"]).and_then(Value::as_f64)
+            .unwrap_or_else(|| get(&houses, &["phi_ecosystem_kernel"]).and_then(Value::as_f64).unwrap_or(0.0)),
+        "phi_head_canonical": get(&phi_frameworks, &["phi_head_canonical"]).and_then(Value::as_f64)
+            .unwrap_or_else(|| get(&houses, &["phi_head_canonical"]).and_then(Value::as_f64).unwrap_or(0.0)),
         "phi_family_views": phi_frameworks,
         "phi_scale_flags": json!({}),
         "phi_scale_regime": "nats",
         "phi_scale_stack": json!([]),
-        "phi_body_kernel_ecosystem": dodeca_phi,
-        "phi_body_operational_support": dodeca_phi,
-        "phi_operational_support": dodeca_phi,
+        "phi_body_kernel_ecosystem": get(&phi_frameworks, &["phi_body_kernel_ecosystem"]).and_then(Value::as_f64)
+            .unwrap_or_else(|| get(&houses, &["phi_body_kernel_ecosystem"]).and_then(Value::as_f64).unwrap_or(0.0)),
+        "phi_body_operational_support": get(&phi_frameworks, &["phi_body_operational_support"]).and_then(Value::as_f64)
+            .unwrap_or_else(|| get(&houses, &["phi_body_operational_support"]).and_then(Value::as_f64).unwrap_or(0.0)),
+        "phi_operational_support": get(&phi_frameworks, &["phi_operational_support"]).and_then(Value::as_f64)
+            .unwrap_or_else(|| get(&houses, &["phi_operational_support"]).and_then(Value::as_f64).unwrap_or(0.0)),
         "phi_federated_coherence_full": json!({}),
         "phi_federated_coherence_sovereign_band": json!({}),
         "psi": psi,
@@ -179,13 +210,13 @@ pub fn build_full_state(
         "sigma_operational_support": sigma,
         "epsilon": epsilon,
         "epsilon_raw": dodeca_epsilon,
-        "epsilon_channels": epsilon_channels,
-        "epsilon_debug": json!({}),
-        "epsilon_desire": epsilon,
-        "epsilon_effective": epsilon,
-        "epsilon_floor": 0.0,
-        "epsilon_resistance": 0.0,
-        "epsilon_role_state": json!({}),
+        "epsilon_channels": epsilon_channels.clone(),
+        "epsilon_debug": get(&houses, &["epsilon_debug"]).cloned().unwrap_or(json!({})),
+        "epsilon_desire": get(&epsilon_channels, &["epsilon_desire"]).and_then(Value::as_f64).unwrap_or(epsilon),
+        "epsilon_effective": get(&epsilon_channels, &["epsilon_effective"]).and_then(Value::as_f64).unwrap_or(epsilon),
+        "epsilon_floor": get(&epsilon_channels, &["epsilon_floor"]).and_then(Value::as_f64).unwrap_or(0.0),
+        "epsilon_resistance": get(&epsilon_channels, &["epsilon_resistance"]).and_then(Value::as_f64).unwrap_or(0.0),
+        "epsilon_role_state": get(&epsilon_channels, &["epsilon_role_state"]).cloned().unwrap_or(json!({})),
         "omega_channels": omega_channels,
         "omega_raw": omega,
         "omega_source": "kernel",
@@ -259,8 +290,6 @@ pub fn build_full_state(
             "via": "ipc_kernel_state + dodecatiad_live.json + constantes",
             "pyo3": false,
         }),
-        // ADMISSIBILITY (2026-09-12): ler do dodecatiad_live.json (escrito pelo Python)
-        "admissibility": get(&dodeca, &["admissibility"]).cloned().unwrap_or(json!({})),
     });
     payload
 }
