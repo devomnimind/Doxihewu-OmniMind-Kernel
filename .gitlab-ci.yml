@@ -53,6 +53,7 @@ cargo-audit:
 # Roda semanalmente (Scheduled) ou sob demanda (Web Manual)
 research-to-code-monitor:
   stage: research
+  timeout: 5m
   image:
     name: registry.gitlab.com/nagyv/gitlab-opencode:1.0.137
     entrypoint: [""]
