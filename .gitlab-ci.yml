@@ -9,7 +9,7 @@ stages:
 # SAST com Semgrep (template oficial GitLab)
 include:
   - template: Jobs/SAST.gitlab-ci.yml
-  - component: $CI_SERVER_FQDN/nagyv/gitlab-opencode/opencode@1.0.137
+  - component: $CI_SERVER_FQDN/nagyv/gitlab-opencode/opencode@2.1.0
     inputs:
       job_prefix: opencode-mr-review
       config_dir: ${CI_PROJECT_DIR}/opencode-config
