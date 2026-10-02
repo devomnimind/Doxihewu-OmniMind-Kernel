@@ -124,6 +124,21 @@ pub fn build_full_state(
     let phi_sovereign_v = get(kernel_state, &["phi_sovereign"]).and_then(Value::as_f64).unwrap_or(0.0);
     let subject_active = get(kernel_state, &["is_subject_active"]).and_then(Value::as_bool).unwrap_or(false);
     let availability_v = get(kernel_state, &["availability_p_mu_nu"]).and_then(Value::as_f64).unwrap_or(0.0);
+
+    // --- Missing fields (parity fix 2026-09-26) ---
+    let free_energy_v = get(kernel_state, &["free_energy"]).and_then(Value::as_f64).unwrap_or(0.0);
+    let complexity_v = get(kernel_state, &["complexity"]).and_then(Value::as_f64).unwrap_or(0.0);
+    let phase_lock_v = get(kernel_state, &["phase_lock"]).and_then(Value::as_f64).unwrap_or(1.0);
+    let volition_v = get(kernel_state, &["volition"]).and_then(Value::as_str).unwrap_or("EXISTENCE_IDLE").to_string();
+
+    // c_plit com fallback para dodecatiad (que tem nomes diferentes)
+    let c_plit_v = get(kernel_state, &["c_plit"]).and_then(Value::as_f64).unwrap_or_else(|| {
+        get(&dodeca, &["plit_contradiction"]).and_then(Value::as_f64).unwrap_or_else(|| {
+            get(&houses, &["plit_contradiction"]).and_then(Value::as_f64).unwrap_or(0.0)
+        })
+    });
+
+    let shear_tension_v = get(kernel_state, &["shear_tension"]).and_then(Value::as_f64).unwrap_or(0.0);
     let epsilon_channels = get(&houses, &["epsilon_channels"]).cloned().unwrap_or(json!({}));
     let omega_channels = get(&houses, &["omega_channels"]).cloned().unwrap_or(json!({}));
 
@@ -177,6 +192,14 @@ pub fn build_full_state(
         "cycle_lineage": format!("rust_f3_c{}", cycle),
         "timestamp": timestamp_utc,
         "historical_identity_temporal": get(&dodeca, &["provenance"]).cloned().unwrap_or(json!({})),
+
+        // --- Missing fields (parity fix 2026-09-26) ---
+        "free_energy": free_energy_v,
+        "complexity": complexity_v,
+        "phase_lock": phase_lock_v,
+        "volition": volition_v,
+        "c_plit": c_plit_v,
+        "shear_tension": shear_tension_v,
 
         // Quádrupla (IPC primário, dodeca fallback)
         "phi": phi,

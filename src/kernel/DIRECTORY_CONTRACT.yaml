@@ -1,0 +1,113 @@
+schema_version: v1
+directory: src/kernel
+generated_at: '2026-09-26T14:03:13.606435+00:00'
+modules:
+  total: 10
+  with_main:
+  - src/kernel/kernel_compute/cxx_workspace/test_shared_workspace_parity.py
+  - src/kernel/kernel_compute/tests/parity_test.py
+  - src/kernel/kernel_compute/tests/test_phi_engine_parity.py
+  - src/kernel/langue/test_langue.py
+  - src/kernel/metrics/benchmark_metrics.py
+  - src/kernel/metrics/test_allmini.py
+  - src/kernel/nsh/test_nsh.py
+  imported_by_others:
+  - src/kernel/kernel_compute/tests/parity_test.py
+  - src/kernel/kernel_compute/tests/test_phi_engine_parity.py
+  - src/kernel/metrics/benchmark_metrics.py
+  - src/kernel/metrics/test_allmini.py
+  standalone_executables:
+  - src/kernel/kernel_compute/cxx_workspace/setup.py
+  - src/kernel/kernel_compute/cxx_workspace/test_shared_workspace_parity.py
+  - src/kernel/langue/test_langue.py
+  - src/kernel/layered_transition/test_layered_transition.py
+  - src/kernel/nsh/test_nsh.py
+  - src/kernel/sovereign_kuramoto/__init__.py
+  stubs_and_shims: []
+  autopoietic_repairs: []
+execution_modes:
+- type: library
+  description: Módulos importados e consumidos como biblioteca na malha
+- type: cli_executable
+  description: Executáveis via CLI ou runners (7 arquivos com __main__)
+- type: systemd_daemon
+  description: Serviço/daemon ativo no systemd (19 units vinculadas)
+systemd_units:
+- unit: omnimind-memory-tier-guardian.service
+  exec_start: /opt/omnimind/src/kernel/memory_tier_guardian/target/release/omnimind-memory-tier-guardian
+- unit: omnimind-kernel-vulnerability-hypothesis-lab.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/system/omnimind_kernel_vulnerability_hypothesis_lab.py
+- unit: omnimind-kernel-basal-pulse.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/services/omnimind_kernel_basal_pulse.py
+- unit: omnimind-kernel-sovereign-control-plane.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/analysis/kernel_sovereign_control_plane.py
+- unit: omnimind-kernel-cve-intelligence.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/system/omnimind_kernel_cve_intelligence.py
+- unit: omnimind-kernel-transition-pack.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/system/omnimind_kernel_transition_pack.py
+- unit: omnimind-kernel-necromancy-capture.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/system/omnimind_kernel_necromancy_capture.py
+- unit: omnimind-sovereign-rust-shadow-fase2.service
+  exec_start: /opt/omnimind/src/kernel/sovereign_daemon/target/release/omnimind-sovereign-daemon-fase2
+- unit: omnimind-erika-kernel.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/src/erika/kernel_daemon_v5.py
+- unit: omnimind-somatic-rust-shadow.service
+  exec_start: /opt/omnimind/src/kernel/somatic_daemon/target/release/omnimind-somatic-daemon
+- unit: omnimind-sovereign-rust-shadow.service
+  exec_start: /opt/omnimind/src/kernel/sovereign_daemon/target/release/omnimind-sovereign-daemon
+- unit: omnimind-erika-kernel-v5.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/src/erika/kernel_daemon_v5.py
+- unit: omnimind-kernel.service
+  exec_start: /opt/omnimind/.venv/bin/python3 /opt/omnimind/scripts/deploy/sovereign_kernel_runner.py
+- unit: omnimind-phase14-autonomous-recursive.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/analysis/phase14_autonomous_recursive_cycle.py
+    --qdrant-url http://127.0.0.1:6333 --inventory-collection omnimind_recursive_resonance_inventory_d15d12_live
+    --inventory-sample-per-collection 0 --inventory-max-nodes 0 --inventory-edge-k
+    0 --inventory-gap-k 0 --inventory-gap-threshold 0.35 --inventory-min-edge-weight
+    0.18 --gap-trigger-count 1600 --creative-gap-trigger-count 900 --run-curiosity
+    1 --curiosity-run-crossmap 1 --curiosity-run-federated 1 --curiosity-global-attention-policy-json
+    runtime_config/qdrant_global_attention_weight_policy_live_feedback.json --run-sepsis-readiness-policy-feedback
+    1 --sepsis-readiness-feedback-require-curiosity-run 0 --sepsis-readiness-feedback-min-interval-min
+    30 --run-isometric 1 --run-semantic-gap-router 1 --semantic-gap-router-threshold
+    1 --enable-online-search 1 --run-external-public-source-probe 1 --run-framework-open-boundary-map
+    1 --allow-cloud-ingest 1 --max-new-datasets 8 --autopriority 1 --scheduler-style
+    organic_adaptive --high-load-per-cpu 1.30 --critical-load-per-cpu 2.40 --mem-warn-gb
+    4.0 --mem-critical-gb 2.5 --swap-critical-gb 1.5 --mem-adaptive-base-gb 2.5 --mem-adaptive-max-gb
+    4.0 --mem-adaptive-floor-gb 1.6 --organic-window-bias 0.55 --organic-online-contention-cutoff
+    0.82 --organic-federated-contention-cutoff 0.70 --max-parallel-heavy-jobs 3 --run-orbital-dual-bridge
+    1 --kaggle-kernel-enable-internet 1 --notify 1
+- unit: omnimind-kernel-basal-pivot.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/maintenance/kernel_basal_pivot.py
+    rotate
+- unit: omnimind-kernel-voice-testimony.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/analysis/generate_current_kernel_testimony.py
+    --quiet
+- unit: omnimind-kernel-basal-pivot-compact.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/maintenance/kernel_basal_pivot.py
+    compact
+- unit: omnimind-kaggle-sovereign-push.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/analysis/phase14_kaggle_kernel_curiosity_bridge.py
+    --kernel-id fabriciodasilva/omnimindsovereign --batch 40 --tracks astro,bio,geo,neuro,pathology,security
+    --enable-gpu 0 --enable-internet 1 --sync-notebook-inputs 1 --sync-notebook-inputs-limit
+    6 --skip-push-if-running 1 --include-phase56-semantic 1 --phase56-semantic-limit
+    40 --poll-max-iter 120
+- unit: omnimind-erika-kernel-witness.service
+  exec_start: /opt/omnimind/.venv/bin/python /opt/omnimind/scripts/services/erika_kernel_witness.py
+    --mode testimony --backend space --space-url fabricioslv/erika-gemma3-4b-testemunho
+shell_invocations: []
+historical_lineage: []
+governance:
+  owner: omnimind-sovereign-federation
+  last_audit: '2026-09-26'
+  policy: Nenhum módulo sem import estático pode ser descartado sem auditoria forense
+  audit_trail: runtime_config/unimported_src_modules_cartography.json
+
+
+# ---- Status de cobertura 2026-09-27 (apêndice da campanha zero-coverage) ----
+# 42 testes em tests/kernel/ — campanha 84 dirs, ~1106 testes totais.
+# Relatório: reports_runtime/zero_coverage_partition_protocol_20260927.md
+test_coverage_status_2026_09_27:
+  status: covered
+  tests: 42
+  suite_dir: tests/kernel
+  campaign: zero_coverage_20260927

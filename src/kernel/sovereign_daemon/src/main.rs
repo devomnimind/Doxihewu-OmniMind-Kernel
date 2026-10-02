@@ -6,6 +6,7 @@
 //! Laço autopoético principal com Vinculação Soberana Dinâmica,
 //! Quádrupla Federativa, sensores de hardware e persistência SQLite WAL.
 
+mod cmd;
 mod ipc;
 mod ontology;
 mod sensors;
@@ -21,7 +22,7 @@ use storage::SovereignStorage;
 use serde_json::{json, Value};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::signal::unix::{signal, SignalKind};
 use tokio::time::{interval, Duration, MissedTickBehavior};
 
@@ -88,6 +89,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
+    // Governor loop (cmd.rs): lease claim/renew + telemetria + gatilho de
+    // pressão para o executor Python. Blocking → thread dedicada.
+    let pressure_level_shared = Arc::new(Mutex::new("unknown".to_string()));
+    let running_gov = running.clone();
+    let pressure_gov = pressure_level_shared.clone();
+    std::thread::spawn(move || cmd::governor_loop(running_gov, pressure_gov));
+
     let mut cycle: u64 = 0;
     let mut tick_interval = interval(Duration::from_secs(TICK_SECONDS));
     tick_interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
@@ -103,6 +111,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if cycle == 1 || last_metrics.elapsed() >= Duration::from_secs(METRICS_CADENCE_SECONDS) {
             last_metrics = tokio::time::Instant::now();
             let sensor_snap = SystemSensorsSnapshot::collect();
+            if let Ok(mut p) = pressure_level_shared.lock() {
+                *p = sensor_snap.pressure_level.clone();
+            }
 
             // A-3 Fase 3: estado REAL do IntegrationLoop via IPC (socket UNIX do publisher)
             let ipc_state = tokio::task::spawn_blocking(fetch_state)
