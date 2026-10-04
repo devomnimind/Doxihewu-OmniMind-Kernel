@@ -16,3 +16,4 @@ Cargo.lock
 !src/kernel/nsh/Cargo.lock
 !src/kernel/somatic_daemon/Cargo.lock
 !src/kernel/sovereign_daemon/Cargo.lock
+!src/kernel/sovereign_kuramoto/Cargo.lock
