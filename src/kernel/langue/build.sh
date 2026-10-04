@@ -14,7 +14,7 @@ cargo build --release
 
 # Copy .so to Python-visible location
 SO_FILE="target/release/libomnimind_langue.so"
-if [ -f "$SO_FILE" ]; then
+if [[ -f "$SO_FILE" ]]; then
     cp "$SO_FILE" "$PROJECT_ROOT/src/kernel/langue/omnimind_langue.so"
     echo "✅ Built: omnimind_langue.so"
     ls -lh "$PROJECT_ROOT/src/kernel/langue/omnimind_langue.so"

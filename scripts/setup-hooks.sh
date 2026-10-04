@@ -8,13 +8,13 @@ set -e
 HOOKS_DIR=".git/hooks"
 SOURCE_DIR="scripts/hooks"
 
-if [ ! -d "$HOOKS_DIR" ]; then
+if [[ ! -d "$HOOKS_DIR" ]]; then
   echo "❌ .git/hooks/ não encontrado. Execute na raiz do repositório."
   exit 1
 fi
 
 for hook in post-commit pre-push; do
-  if [ -f "$SOURCE_DIR/$hook" ]; then
+  if [[ -f "$SOURCE_DIR/$hook" ]]; then
     cp "$SOURCE_DIR/$hook" "$HOOKS_DIR/$hook"
     chmod +x "$HOOKS_DIR/$hook"
     echo "✅ $hook instalado"
