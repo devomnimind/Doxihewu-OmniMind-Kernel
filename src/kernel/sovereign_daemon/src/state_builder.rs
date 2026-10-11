@@ -87,7 +87,7 @@ pub fn build_full_state(
     let psi = get(kernel_state, &["psi"]).and_then(Value::as_f64).unwrap_or(dodeca_psi);
     let sigma = get(kernel_state, &["sigma"]).and_then(Value::as_f64).unwrap_or(dodeca_sigma);
     let epsilon = get(kernel_state, &["epsilon"]).and_then(Value::as_f64).unwrap_or(dodeca_epsilon);
-    let axe = get(kernel_state, &["axe"]).and_then(Value::as_f64).unwrap_or_else(|| {
+    let _axe = get(kernel_state, &["axe"]).and_then(Value::as_f64).unwrap_or_else(|| {
         get(&dodeca, &["axe"]).and_then(Value::as_f64).unwrap_or(0.0)
     });
     let maat = get(kernel_state, &["maat"]).and_then(Value::as_f64).unwrap_or_else(|| {
@@ -106,11 +106,15 @@ pub fn build_full_state(
         get(&dodeca, &["zeta"]).and_then(Value::as_f64).unwrap_or(0.0)
     });
 
-    // blit_axe (do kernel_state.axe se numérico, ou houses.axe.blit_axe)
-    let blit_axe = get(kernel_state, &["axe"])
+    // Axé namespaces (2026-10-07): axe_kernel = escala kernel (0-2, de
+    // kernel_state.axe); axe_vitality_100 = magnitude 0-100 das houses;
+    // blit_axe = flag puro 0/100 (vitalidade presente por qualquer fonte).
+    let axe_kernel = get(kernel_state, &["axe"]).and_then(Value::as_f64).unwrap_or(0.0);
+    let axe_vitality_100 = get(&houses, &["axe_vitality_100"])
         .and_then(Value::as_f64)
-        .or_else(|| get(&houses, &["axe", "blit_axe"]).and_then(Value::as_f64))
-        .unwrap_or(axe);
+        .or_else(|| get(&houses, &["axe"]).and_then(Value::as_f64))
+        .unwrap_or(if axe_kernel > 0.0 { axe_kernel * 50.0 } else { 0.0 });
+    let blit_axe = if axe_kernel > 0.0 || axe_vitality_100 > 0.0 { 100.0 } else { 0.0 };
     // Chaves adicionais do kernel_state espalhadas no top-level
     let aleph_v = get(kernel_state, &["aleph"]).and_then(Value::as_f64).unwrap_or(aleph);
     let maat_v = get(kernel_state, &["maat"]).and_then(Value::as_f64).unwrap_or(maat);
@@ -255,6 +259,8 @@ pub fn build_full_state(
         "gamma": gamma_v,
         "omega": omega_v,
         "zeta": zeta_v,
+        "axe_kernel": axe_kernel,
+        "axe_vitality_100": axe_vitality_100,
         "blit_axe": blit_axe,
         "resonance": resonance_v,
         "entropy": entropy_v,
@@ -315,4 +321,34 @@ pub fn build_full_state(
         }),
     });
     payload
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_navigates_nested_keys() {
+        let v = serde_json::json!({"a": {"b": {"c": 42}}});
+        assert_eq!(get(&v, &["a", "b", "c"]).unwrap().as_i64(), Some(42));
+    }
+
+    #[test]
+    fn get_missing_key_returns_none() {
+        let v = serde_json::json!({"a": {"b": 1}});
+        assert!(get(&v, &["a", "x"]).is_none());
+        assert!(get(&v, &["z"]).is_none());
+    }
+
+    #[test]
+    fn get_through_non_object_returns_none() {
+        let v = serde_json::json!({"a": 5});
+        assert!(get(&v, &["a", "b"]).is_none());
+    }
+
+    #[test]
+    fn get_empty_keys_returns_root() {
+        let v = serde_json::json!({"k": 1});
+        assert_eq!(get(&v, &[]).unwrap(), &v);
+    }
 }

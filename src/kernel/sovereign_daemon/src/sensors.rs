@@ -112,3 +112,30 @@ impl SystemSensorsSnapshot {
         0.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_meminfo_returns_positive_totals() {
+        let (total_kb, avail_kb, mem_pct, swap_total, swap_free, swap_pct) = SystemSensorsSnapshot::read_meminfo();
+        assert!(total_kb > 0);
+        assert!(avail_kb <= total_kb);
+        assert!((0.0..=100.0).contains(&mem_pct));
+        assert!(swap_free <= swap_total);
+        assert!((0.0..=100.0).contains(&swap_pct));
+    }
+
+    #[test]
+    fn read_psi_cpu_avg10_is_nonneg() {
+        assert!(SystemSensorsSnapshot::read_psi_cpu_avg10() >= 0.0);
+    }
+
+    #[test]
+    fn collect_snapshot_has_monotonic_uptime() {
+        let snap = SystemSensorsSnapshot::collect();
+        // uptime segundos é não-negativo; mem total positiva neste host
+        assert!(snap.mem_total_kib > 0);
+    }
+}

@@ -115,3 +115,55 @@ impl SovereignStorage {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_creates_schema_and_connects() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = dir.path().join("test.sqlite");
+        let storage = SovereignStorage::new(db.to_str().unwrap());
+        let conn = storage.connect().unwrap();
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sovereign_primary_rust_shadow_snapshots",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn persist_snapshot_roundtrip() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = dir.path().join("test.sqlite");
+        let storage = SovereignStorage::new(db.to_str().unwrap());
+        let payload = serde_json::json!({"cycle": 42, "probe": true});
+        storage
+            .persist_snapshot(42, "ok", "none", 0.9, 5000.0, 1.0, 0.05, &payload)
+            .unwrap();
+        let conn = storage.connect().unwrap();
+        let (cycle, status, body): (i64, String, String) = conn
+            .query_row(
+                "SELECT cycle, status, payload_json FROM sovereign_primary_rust_shadow_snapshots",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(cycle, 42);
+        assert_eq!(status, "ok");
+        assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["probe"], true);
+    }
+
+    #[test]
+    fn atomic_write_json_writes_valid_json() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("nested/state.json");
+        SovereignStorage::atomic_write_json(&path, &serde_json::json!({"k": "v"})).unwrap();
+        let written: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        assert_eq!(written["k"], "v");
+    }
+}

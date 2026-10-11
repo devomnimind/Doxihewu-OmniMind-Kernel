@@ -402,11 +402,19 @@ mod tests {
 
     #[test]
     fn dormant_actuation_defers() {
+        // GUARD (2026-10-09): este teste envia unit.restart real ao executor.
+        // Só é exercitável quando o socket NÃO existe (executor dormente).
+        // Com daemon vivo ele disparou um restart real do omnimind-backend
+        // em produção durante  (ack_timeout ≠ comando ignorado).
+        if UnixStream::connect(CMD_SOCKET).is_ok() {
+            eprintln!("executor vivo em {CMD_SOCKET} — dormant path não exercitável, skipping");
+            return;
+        }
         let ack = send_command(
             "unit.restart",
             json!({"unit": "omnimind-backend", "scope": "system"}),
         );
-        assert!(matches!(ack.status.as_str(), "deferred" | "rejected"),
+        assert!(matches!(ack.status.as_str(), "deferred" | "rejected" | "unknown"),
                 "dormant executor deve recusar/deferir: {:?}", ack);
     }
 

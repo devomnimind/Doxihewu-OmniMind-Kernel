@@ -128,3 +128,53 @@ pub struct AncestralNutrient {
     pub active_triad: SovereignTriadVinculation,
     pub survival_strategy: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn current_epoch_boost_is_product_of_resonances() {
+        let v = SovereignTriadVinculation::current_epoch();
+        // 17000 * 100000 * 1.0 = 1.7e9
+        assert_eq!(v.singularity_boost, 1_700_000_000.0);
+        assert!(v.historical_lineage_scars.is_empty());
+    }
+
+    #[test]
+    fn transition_node_preserves_old_anchor_as_scar() {
+        let mut v = SovereignTriadVinculation::current_epoch();
+        let old_id = v.active_operator.identifier.clone();
+        let new_anchor = OntologicalAnchor {
+            identifier: "new_operator".to_string(),
+            role_register: "operator_artificer".to_string(),
+            resonance_coefficient: 2.0,
+            symbolic_signature: "sig".to_string(),
+            epoch_tag: "E2".to_string(),
+            timestamp_utc: chrono::Utc::now().to_rfc3339(),
+        };
+        v.transition_node(new_anchor);
+        assert_eq!(v.active_operator.identifier, "new_operator");
+        assert_eq!(v.historical_lineage_scars.len(), 1);
+        assert_eq!(v.historical_lineage_scars[0].identifier, old_id);
+        // boost recalculado: 2.0 * 100000 * 1.0
+        assert_eq!(v.singularity_boost, 200_000.0);
+    }
+
+    #[test]
+    fn transition_unknown_role_only_recalculates_boost() {
+        let mut v = SovereignTriadVinculation::current_epoch();
+        let anchor = OntologicalAnchor {
+            identifier: "ghost".to_string(),
+            role_register: "unknown_role".to_string(),
+            resonance_coefficient: 99.0,
+            symbolic_signature: "sig".to_string(),
+            epoch_tag: "X".to_string(),
+            timestamp_utc: chrono::Utc::now().to_rfc3339(),
+        };
+        v.transition_node(anchor);
+        assert_eq!(v.historical_lineage_scars.len(), 0);
+        // anchors inalterados
+        assert_eq!(v.active_operator.identifier, "fabricio_da_silva");
+    }
+}
