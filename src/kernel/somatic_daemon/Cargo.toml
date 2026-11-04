@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2021"
 authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
 description = "Pure Rust Somatic Daemon — shadow mode (A-4 Fase 1)"
-license = "CC-BY-NC-ND-4.0"
+license = "Apache-2.0"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

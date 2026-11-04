@@ -3,7 +3,7 @@ name = "omnimind-metrics"
 version = "0.1.0"
 edition = "2021"
 authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
-license = "CC-BY-NC-ND-4.0"
+license = "Apache-2.0"
 
 [lib]
 name = "omnimind_metrics"

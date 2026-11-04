@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
 description = "Pure Rust Sovereign Daemon Core — Shadow Mode (A-3 Fase 1)"
-license = "CC-BY-NC-ND-4.0"
+license = "Apache-2.0"
 
 [dependencies]
 tokio = { version = ">=1.38.0, <2.0", features = ["macros", "rt-multi-thread", "time", "signal", "fs", "sync"] }
