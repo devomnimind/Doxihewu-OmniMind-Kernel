@@ -19,7 +19,6 @@
 //!   - chaotic      = "neurotic chaos" (breakdown of stable patterns)
 
 use ndarray::{Array1, Array2};
-use ndarray::linalg::Dot;
 
 // We avoid pulling in a full eigenvalue solver dependency.
 // Instead, we use the power iteration method to estimate the spectral radius
