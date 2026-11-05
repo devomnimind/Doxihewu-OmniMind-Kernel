@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
+// SPDX-License-Identifier: Apache-2.0
 // See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
 #![allow(clippy::type_complexity)]
 //
@@ -1110,4 +1110,79 @@ fn main() {
     wal_checkpoint(&cfg);
 
     log(&cfg, &format!("SomaticDaemon shadow finalizado: {} ciclos executados.", cycle_count));
+}
+
+// ─── Tests ──────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn age_seconds_past_iso_is_positive() {
+        let secs = age_seconds_from_iso("2020-01-01T00:00:00Z").unwrap();
+        assert!(secs > 0.0);
+    }
+
+    #[test]
+    fn age_seconds_z_and_offset_both_parse() {
+        assert!(age_seconds_from_iso("2020-01-01T00:00:00Z").is_some());
+        assert!(age_seconds_from_iso("2020-01-01T00:00:00+00:00").is_some());
+    }
+
+    #[test]
+    fn age_seconds_invalid_returns_none() {
+        assert!(age_seconds_from_iso("not-a-date").is_none());
+        assert!(age_seconds_from_iso("").is_none());
+        assert!(age_seconds_from_iso("   ").is_none());
+    }
+
+    #[test]
+    fn gen_uuid_is_32_hex_chars() {
+        let u = gen_uuid();
+        assert_eq!(u.len(), 32);
+        assert!(u.chars().all(|c| c.is_ascii_hexdigit()));
+        assert_ne!(u, gen_uuid());
+    }
+
+    #[test]
+    fn somatic_state_high_resources_gives_vitality() {
+        // 30GB livres de 32GB + cpu 10% => energy ≈ 91.9 > 80 => vitalidade
+        let (energy, pain, pleasure) = calculate_somatic_state(50.0, 30.0, 10.0);
+        assert!(energy > 80.0);
+        assert!(pain.is_empty());
+        assert!(pleasure.contains(&"vitalidade".to_string()));
+        assert!(pleasure.contains(&"temperatura_ideal".to_string()));
+    }
+
+    #[test]
+    fn somatic_state_overheating_pain() {
+        let (_, pain, _) = calculate_somatic_state(90.0, 30.0, 10.0);
+        assert!(pain.contains(&"sobreaquecimento".to_string()));
+    }
+
+    #[test]
+    fn somatic_state_exhaustion_pain() {
+        // 1GB livre (~3.1%) + cpu 95% (avail 5%) => energy ≈ 4 < 20 => exaustão
+        let (energy, pain, _) = calculate_somatic_state(50.0, 1.0, 95.0);
+        assert!(energy < 20.0);
+        assert!(pain.contains(&"exaustão".to_string()));
+    }
+
+    #[test]
+    fn somatic_state_cold_no_temp_pleasure() {
+        // temp <= 30 não gera "temperatura_ideal"
+        let (_, _, pleasure) = calculate_somatic_state(20.0, 30.0, 10.0);
+        assert!(!pleasure.contains(&"temperatura_ideal".to_string()));
+    }
+
+    #[test]
+    fn config_defaults_match_alignment_16_3() {
+        // Sem env vars setadas: defaults do alinhamento (15s / 3s / 120s)
+        let cfg = Config::from_env();
+        // O env do host de testes pode ter as vars; só verifica campos derivados do root
+        assert!(cfg.db_path.ends_with("somatic_mesh_runtime.sqlite"));
+        assert!(cfg.shadow_state_file.ends_with("daemon_state_rust_shadow.json"));
+        assert!(cfg.min_sleep < cfg.cycle_interval);
+    }
 }

@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! Port Rust das 4 funções hot-path de `phi_constants.py`.
 //!
 //! As ~285 constantes permanecem em Python (são apenas valores lidos no import,

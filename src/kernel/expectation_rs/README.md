@@ -1,7 +1,7 @@
 # omnimind-expectation-rs
 
 > Expectation Module em Rust — portado de `src/consciousness/expectation_module.py`.
-> Licença: CC-BY-NC-ND-4.0.
+> Licença: Apache-2.0.
 
 ## Finalidade
 

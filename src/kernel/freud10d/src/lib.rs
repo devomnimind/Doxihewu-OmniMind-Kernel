@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! Aparato Psíquico Freudiano 10D — Porte Rust.
 //!
 //! Espelha `src/consciousness/freudian_10d_apparatus.py` em pyo3+ndarray.

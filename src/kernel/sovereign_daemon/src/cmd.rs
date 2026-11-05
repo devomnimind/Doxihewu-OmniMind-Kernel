@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! cmd.rs — OMNI3 v2: cliente da lane de comando Rust→Python.
 //!
 //! Complemento de ipc.rs (Py→Rs estado). Envia comandos ao

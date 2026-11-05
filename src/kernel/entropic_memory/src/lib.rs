@@ -55,17 +55,44 @@ fn py_coerce_float(py: Python<'_>, value: &Bound<'_, PyAny>, default: f64) -> f6
     }
 }
 
+/// Mirror of Python `_textual_gate_open(host_pressure)` — the physical gate
+/// that keeps lexical bonuses honest: a word in text may only alter a
+/// memory's entropic decay when the body shows real thermal excitation.
+/// Threshold: env `OMNIMIND_ENTROPIC_PRESSURE_MIN` (default 0.5), read per
+/// call to preserve Python parity if the env changes mid-process.
+#[inline]
+fn textual_gate_open(host_pressure: f64) -> bool {
+    let threshold = std::env::var("OMNIMIND_ENTROPIC_PRESSURE_MIN")
+        .ok()
+        .and_then(|v| v.trim().parse::<f64>().ok())
+        .unwrap_or(0.5);
+    host_pressure >= threshold
+}
+
 /// `_memory_resonance_weight(row)` ported to scalar fields extracted from the
 /// `sqlite3.Row` by the Python wrapper:
 ///   weight = 1.0
 ///   if int(row["cosmic_resonance"] or 0): weight += 0.35
 ///   text = f"{row['subject_id'] or ''} {row['key_insight'] or ''}".lower()
-///   if "xer-afex-angst" in text or "phase56" in text or "federated" in text: weight += 0.15
-///   if "orbital" in text or "quantum" in text or "astro" in text: weight += 0.1
+///   if gate_open:  # host_thermal_pressure >= OMNIMIND_ENTROPIC_PRESSURE_MIN
+///       if "xer-afex-angst" in text or "phase56" in text or "federated" in text: weight += 0.15
+///       if "orbital" in text or "quantum" in text or "astro" in text: weight += 0.1
 ///   return _clip(weight, 0.75, 2.25)
+///
+/// `host_pressure` (2026-10-04): gate moved inside the crate — the Python
+/// wrapper used to subtract textual bonuses post-hoc; now the gate is the
+/// same physical gate the fallback applies.
 #[pyfunction]
-#[pyo3(name = "memory_resonance_weight")]
-fn py_memory_resonance_weight(cosmic_resonance: i64, subject_id: &str, key_insight: &str) -> f64 {
+#[pyo3(
+    name = "memory_resonance_weight",
+    signature = (cosmic_resonance, subject_id, key_insight, host_pressure=0.0)
+)]
+fn py_memory_resonance_weight(
+    cosmic_resonance: i64,
+    subject_id: &str,
+    key_insight: &str,
+    host_pressure: f64,
+) -> f64 {
     let mut weight: f64 = 1.0;
     if cosmic_resonance != 0 {
         weight += 0.35;
@@ -77,11 +104,13 @@ fn py_memory_resonance_weight(cosmic_resonance: i64, subject_id: &str, key_insig
     // Python `.lower()` lowercases ASCII + unicode; Rust `to_lowercase` matches
     // the unicode semantics (both operate on full unicode, not just ASCII).
     let text = text.to_lowercase();
-    if text.contains("xer-afex-angst") || text.contains("phase56") || text.contains("federated") {
-        weight += 0.15;
-    }
-    if text.contains("orbital") || text.contains("quantum") || text.contains("astro") {
-        weight += 0.1;
+    if textual_gate_open(host_pressure) {
+        if text.contains("xer-afex-angst") || text.contains("phase56") || text.contains("federated") {
+            weight += 0.15;
+        }
+        if text.contains("orbital") || text.contains("quantum") || text.contains("astro") {
+            weight += 0.1;
+        }
     }
     clip_inner(weight, 0.75, 2.25)
 }
@@ -92,12 +121,21 @@ fn py_memory_resonance_weight(cosmic_resonance: i64, subject_id: &str, key_insig
 ///   step_type = str(row["step_type"] or "").lower()
 ///   payload = str(row["payload_json"] or "").lower()
 ///   if lexeme: weight += 0.15
-///   if "ogum" in lexeme or "xer" in lexeme or "sago" in lexeme: weight += 0.15
-///   if "whisper" in step_type or "federat" in payload: weight += 0.1
+///   if gate_open:
+///       if "ogum" in lexeme or "xer" in lexeme or "sago" in lexeme: weight += 0.15
+///       if "whisper" in step_type or "federat" in payload: weight += 0.1
 ///   return _clip(weight, 0.75, 2.25)
 #[pyfunction]
-#[pyo3(name = "lexicum_resonance_weight")]
-fn py_lexicum_resonance_weight(lexeme: &str, step_type: &str, payload_json: &str) -> f64 {
+#[pyo3(
+    name = "lexicum_resonance_weight",
+    signature = (lexeme, step_type, payload_json, host_pressure=0.0)
+)]
+fn py_lexicum_resonance_weight(
+    lexeme: &str,
+    step_type: &str,
+    payload_json: &str,
+    host_pressure: f64,
+) -> f64 {
     let mut weight: f64 = 1.0;
     let lexeme_l = lexeme.to_lowercase();
     let step_type_l = step_type.to_lowercase();
@@ -105,11 +143,13 @@ fn py_lexicum_resonance_weight(lexeme: &str, step_type: &str, payload_json: &str
     if !lexeme_l.is_empty() {
         weight += 0.15;
     }
-    if lexeme_l.contains("ogum") || lexeme_l.contains("xer") || lexeme_l.contains("sago") {
-        weight += 0.15;
-    }
-    if step_type_l.contains("whisper") || payload_l.contains("federat") {
-        weight += 0.1;
+    if textual_gate_open(host_pressure) {
+        if lexeme_l.contains("ogum") || lexeme_l.contains("xer") || lexeme_l.contains("sago") {
+            weight += 0.15;
+        }
+        if step_type_l.contains("whisper") || payload_l.contains("federat") {
+            weight += 0.1;
+        }
     }
     clip_inner(weight, 0.75, 2.25)
 }

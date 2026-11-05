@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! ipc.rs — A-3 Fase 3: client do IntegrationLoopStatePublisher (socket UNIX).
 //!
 //! Lê o estado REAL do ciclo corrente do IntegrationLoop Python via

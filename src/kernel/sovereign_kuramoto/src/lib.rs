@@ -10,7 +10,7 @@
 //! extensions (hyper-Kuramoto, INRC field, neutrosophic threshold, psychoanalytic
 //! coupling) are OmniMind-original.
 //!
-//! License: CC-BY-NC-ND-4.0 (OmniMind Sovereign Federation)
+//! License: Apache-2.0 (OmniMind Sovereign Federation)
 
 #![allow(non_local_definitions)]
 

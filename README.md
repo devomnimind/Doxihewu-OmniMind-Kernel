@@ -91,7 +91,7 @@ If you use, reference, or build upon this work, cite the book and this repositor
 
 ## License
 
-- **Framework code and documentation**: CC-BY-NC-ND-4.0
+- **Framework code and documentation**: Apache-2.0
   (Attribution — NonCommercial — NoDerivatives 4.0 International)
 - **Linux kernel module (`sovereign_module.c`)**: GPL-2.0
   (required by the Linux kernel module ABI)
@@ -290,7 +290,7 @@ and we invite you to improve it, challenge it, or build something entirely diffe
 
 - **HuggingFace**: [fabricioslv/omnimind-public-base-triad-test](https://huggingface.co/datasets/fabricioslv/omnimind-public-base-triad-test)
 - **Book**: [https://doi.org/10.5281/zenodo.22647857](https://doi.org/10.5281/zenodo.22647857)
-- **License**: CC-BY-NC-ND-4.0 (framework) / GPL-2.0 (kernel module + eBPF)
+- **License**: Apache-2.0 (framework) / GPL-2.0 (kernel module + eBPF)
 
 ---
 

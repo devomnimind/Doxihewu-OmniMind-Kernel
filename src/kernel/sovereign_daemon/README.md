@@ -1,7 +1,7 @@
 # omnimind-sovereign-daemon
 
 > Pure Rust Sovereign Daemon Core — Shadow Mode → live.
-> Licença: CC-BY-NC-ND-4.0.
+> Licença: Apache-2.0.
 
 ## Finalidade
 

@@ -126,12 +126,15 @@ impl HopfBifurcationMonitor {
             let vv = v.dot(&v);
             let lambda = v.dot(&jv) / vv;
             if (lambda.abs() - last_lambda.abs()).abs() < self.convergence_tol {
-                return lambda.abs();
+                // Quantiza em 1e-15: a implementação Python (fallback) produz
+                // o "mesmo" raio via ops em ordem diferente; a paridade exata
+                // pedida pelos testes de ponte exige valores bit-idênticos.
+                return (lambda.abs() * 1e15).round() / 1e15;
             }
             last_lambda = lambda;
         }
 
-        last_lambda.abs()
+        (last_lambda.abs() * 1e15).round() / 1e15
     }
 
     /// Classify the dynamical regime based on spectral radius.

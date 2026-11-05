@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! expectation_rs — Expectation Module em Rust (FASE B, 2026-08-31)
 //!
 //! Porte de `src/consciousness/expectation_module.py` (a rede neural do módulo
