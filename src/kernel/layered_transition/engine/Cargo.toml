@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["OmniMind Sovereign Federation <omnimind@kernel.local>"]
 description = "Layered transition engine - optimized mathematical kernels migrated from integration_loop.py"
-license = "CC-BY-NC-ND-4.0"
+license = "Apache-2.0"
 
 [lib]
 name = "layered_transition_engine"

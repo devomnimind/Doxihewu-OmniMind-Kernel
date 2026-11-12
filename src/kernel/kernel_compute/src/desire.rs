@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! Port Rust de `src/autopoietic/desire_engine.py` (75 linhas Python).
 //!
 //! Motor de Desejo Lacaniano/Deleuziano: calcula o impulso latente para ir

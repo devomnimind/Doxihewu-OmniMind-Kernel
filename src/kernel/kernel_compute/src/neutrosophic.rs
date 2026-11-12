@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! Port Rust das 4 funções hot-path de `neutrosophic_metrics.py`.
 //!
 //! O caller principal é `omnimind_transcendent_kernel.py:934-962` que executa

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: CC-BY-NC-ND-4.0
+# SPDX-License-Identifier: Apache-2.0
 """test_public_base_triad.py
 
 Teste de integração da base pública mínima (triad):

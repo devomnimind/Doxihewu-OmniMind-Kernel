@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
+// SPDX-License-Identifier: Apache-2.0
 // See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -497,5 +497,82 @@ fn main() {
         if let Ok(json_str) = serde_json::to_string_pretty(&payload) {
             let _ = fs::write(&state_path, json_str);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+
+    #[test]
+    fn parse_kb_reads_second_field() {
+        assert_eq!(parse_kb("MemTotal:       32768000 kB"), 32768000.0);
+        assert_eq!(parse_kb("MemAvailable:   12345 kB"), 12345.0);
+    }
+
+    #[test]
+    fn parse_kb_malformed_returns_zero() {
+        assert_eq!(parse_kb(""), 0.0);
+        assert_eq!(parse_kb("MemTotal:"), 0.0);
+        assert_eq!(parse_kb("MemTotal: abc kB"), 0.0);
+    }
+
+    #[test]
+    fn parse_avg10_reads_avg10_field() {
+        let line = "some avg10=1.23 avg60=4.56 avg300=7.89 total=12345";
+        assert_eq!(parse_avg10(line), 1.23);
+    }
+
+    #[test]
+    fn parse_avg10_full_line() {
+        let line = "full avg10=0.50 avg60=0.10 avg300=0.00 total=999";
+        assert_eq!(parse_avg10(line), 0.50);
+    }
+
+    #[test]
+    fn parse_avg10_missing_returns_zero() {
+        assert_eq!(parse_avg10("some avg60=1.0"), 0.0);
+        assert_eq!(parse_avg10(""), 0.0);
+    }
+
+    #[test]
+    fn env_int_parses_or_defaults() {
+        env::set_var("MTG_TEST_INT", "42");
+        assert_eq!(env_int("MTG_TEST_INT", 7), 42);
+        env::set_var("MTG_TEST_INT", "notanint");
+        assert_eq!(env_int("MTG_TEST_INT", 7), 7);
+        env::remove_var("MTG_TEST_INT");
+        assert_eq!(env_int("MTG_TEST_INT", 7), 7);
+    }
+
+    #[test]
+    fn env_float_parses_or_defaults() {
+        env::set_var("MTG_TEST_FLOAT", "2.5");
+        assert_eq!(env_float("MTG_TEST_FLOAT", 1.0), 2.5);
+        env::remove_var("MTG_TEST_FLOAT");
+        assert_eq!(env_float("MTG_TEST_FLOAT", 1.5), 1.5);
+    }
+
+    #[test]
+    fn env_flag_truthy_variants() {
+        for v in ["1", "true", "yes", "on", "TRUE", " On "] {
+            env::set_var("MTG_TEST_FLAG", v);
+            assert!(env_flag("MTG_TEST_FLAG", false), "value {v} should be truthy");
+        }
+        env::set_var("MTG_TEST_FLAG", "0");
+        assert!(!env_flag("MTG_TEST_FLAG", true));
+        env::remove_var("MTG_TEST_FLAG");
+        assert!(env_flag("MTG_TEST_FLAG", true));
+        assert!(!env_flag("MTG_TEST_FLAG", false));
+    }
+
+    #[test]
+    fn read_meminfo_returns_sane_gib() {
+        let (total, avail) = read_meminfo();
+        // Host real: /proc/meminfo deve existir e ser coerente
+        assert!(total > 0.0, "MemTotal should parse on Linux");
+        assert!(avail >= 0.0);
+        assert!(avail <= total);
     }
 }

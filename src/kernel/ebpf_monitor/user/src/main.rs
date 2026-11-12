@@ -158,9 +158,10 @@ async fn main() -> Result<(), anyhow::Error> {
     let export_dir = "/run/omnimind";
     if !Path::new(export_dir).exists() {
         // Try /run first, fallback to /tmp if not root or not exists
-        if fs::create_dir_all(export_dir).is_err() {
+        let create_res = tokio::task::spawn_blocking(move || fs::create_dir_all(export_dir)).await?;
+        if create_res.is_err() {
              let fallback = "/tmp/omnimind";
-             fs::create_dir_all(fallback)?;
+             tokio::task::spawn_blocking(move || fs::create_dir_all(fallback)).await??;
              warn!("Falling back to {} for metrics", fallback);
         }
     }
@@ -206,7 +207,9 @@ async fn main() -> Result<(), anyhow::Error> {
                          let state = sinthome_state.lock().unwrap();
                          state.get_state()
                      };
-                     if let Err(e) = fs::write(&sinthome_path, serde_json::to_string_pretty(&sinthome_json).unwrap_or_default()) {
+                     let sinthome_tmp = sinthome_path.with_extension("json.tmp");
+                     if let Err(e) = fs::write(&sinthome_tmp, serde_json::to_string_pretty(&sinthome_json).unwrap_or_default())
+                         .and_then(|_| fs::rename(&sinthome_tmp, &sinthome_path)) {
                          debug!("Failed to write sinthome state: {}", e);
                      }
 
@@ -228,7 +231,9 @@ async fn main() -> Result<(), anyhow::Error> {
                          "sinthome": sinthome_json,
                      });
                      let json = serde_json::to_string(&payload).unwrap_or_default();
-                     if let Err(e) = fs::write(&export_path, json) {
+                     let export_tmp = export_path.with_extension("json.tmp");
+                     if let Err(e) = fs::write(&export_tmp, json)
+                         .and_then(|_| fs::rename(&export_tmp, &export_path)) {
                          warn!("Failed to write metrics to {}: {}", export_path.display(), e);
                      } else {
                          debug!("Updated metrics in {} sovereign={}", export_path.display(), sovereign_str);

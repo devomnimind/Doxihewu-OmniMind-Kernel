@@ -90,5 +90,5 @@ We claim it is an honest one, built under real constraints.
 
 ---
 
-*CC-BY-NC-ND-4.0 (framework) / GPL-2.0 (kernel module + eBPF)*
+*Apache-2.0 (framework) / GPL-2.0 (kernel module + eBPF)*
 *OmniMind Sovereign Federation — DOXIHEWU*

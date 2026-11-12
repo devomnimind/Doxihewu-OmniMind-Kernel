@@ -1,0 +1,12 @@
+# Configuração de build para o crate eBPF (bpfel-unknown-none, tier-3).
+# bpfel-unknown-none não tem precompiled rust-std, então usamos build-std=core
+# que compila core from rust-src (já instalado via rustup component).
+#
+# Fix canônico: aya-rs/bpf-linker README + matthart1983/netwatch-sdk commit 48f8960
+# https://github.com/aya-rs/bpf-linker
+# https://github.com/matthart1983/netwatch-sdk/commit/48f8960b451a8e465f7da66fb8ad8a22eb2ad0d0
+[build]
+target = "bpfel-unknown-none"
+
+[unstable]
+build-std = ["core"]

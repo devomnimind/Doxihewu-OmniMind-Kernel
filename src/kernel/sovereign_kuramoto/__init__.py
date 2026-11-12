@@ -14,7 +14,7 @@ The mathematical concepts (Kuramoto, LIF, Hopf) are public domain; the
 extensions (hyper-Kuramoto, INRC field, neutrosophic threshold, psychoanalytic
 coupling) are OmniMind-original.
 
-License: CC-BY-NC-ND-4.0 (OmniMind Sovereign Federation)
+License: Apache-2.0 (OmniMind Sovereign Federation)
 """
 
 from __future__ import annotations

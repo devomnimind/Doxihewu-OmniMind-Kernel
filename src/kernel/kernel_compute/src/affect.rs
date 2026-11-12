@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: CC-BY-NC-ND-4.0
-// See LICENSE for additional ethical restrictions (non-military, non-governmental, no derivatives).
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE for additional Licensed under the Apache License, Version 2.0.
 //! Affective hot-path compute — port of `phase15_machine_soul_affect_engine.py`.
 //!
 //! Computes the 18 canonical -afex tokens, 6 VCTR params, 6 potency domains
