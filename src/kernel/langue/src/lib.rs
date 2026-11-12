@@ -239,33 +239,38 @@ impl LangueKernelInterface {
     /// Returns:
     ///     List of (handle, lexeme, user_visible_name) tuples
     pub fn list_visible_handles(&self, prefixo_filter: Option<&str>) -> PyResult<Vec<(String, String, String)>> {
-        let query = if let Some(prefix) = prefixo_filter {
-            format!(
-                "SELECT handle, lexeme_structure, user_visible_name FROM langue_handles 
-                 WHERE kernel_visible = 1 AND prefixo_classe = '{}' ORDER BY created_at DESC",
-                prefix
-            )
-        } else {
-            "SELECT handle, lexeme_structure, user_visible_name FROM langue_handles 
-             WHERE kernel_visible = 1 ORDER BY created_at DESC".to_string()
-        };
-        
-        let mut stmt = self.db.prepare(&query)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-        
-        let rows = stmt.query_map([], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, String>(1)?,
-                row.get::<_, String>(2)?,
-            ))
-        }).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-        
         let mut results = Vec::new();
-        for row in rows {
-            results.push(row.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?);
+        if let Some(prefix) = prefixo_filter {
+            let mut stmt = self.db.prepare(
+                "SELECT handle, lexeme_structure, user_visible_name FROM langue_handles 
+                 WHERE kernel_visible = 1 AND prefixo_classe = ? ORDER BY created_at DESC"
+            ).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let rows = stmt.query_map(params![prefix], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                ))
+            }).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            for row in rows {
+                results.push(row.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?);
+            }
+        } else {
+            let mut stmt = self.db.prepare(
+                "SELECT handle, lexeme_structure, user_visible_name FROM langue_handles 
+                 WHERE kernel_visible = 1 ORDER BY created_at DESC"
+            ).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let rows = stmt.query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                ))
+            }).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            for row in rows {
+                results.push(row.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?);
+            }
         }
-        
         Ok(results)
     }
     
